@@ -2328,7 +2328,7 @@ Rigidbody2D:
   m_Mass: 1
   m_LinearDrag: 0
   m_AngularDrag: 0.05
-  m_GravityScale: 1
+  m_GravityScale: 2
   m_Material: {fileID: 0}
   m_Interpolate: 0
   m_SleepingMode: 1
@@ -2440,6 +2440,10 @@ MonoBehaviour:
   _headColider: {fileID: 182193816}
   _headCheckerRadius: 0.27
   _headChecker: {fileID: 357843313}
+  _animator: {fileID: 182193817}
+  _runAnimatorKey: Speed
+  _jumpAnimatorKey: Jump
+  _crouchAnimatorKey: Crouch
 --- !u!58 &182193816
 CircleCollider2D:
   m_ObjectHideFlags: 0

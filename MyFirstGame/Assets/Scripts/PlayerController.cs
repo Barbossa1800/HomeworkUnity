@@ -21,6 +21,13 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float _headCheckerRadius;
     [SerializeField] private Transform _headChecker;
 
+    [Header(("Animation"))] 
+    [SerializeField] private Animator _animator;
+
+    [SerializeField] private string _runAnimatorKey;
+    [SerializeField] private string _jumpAnimatorKey;
+    [SerializeField] private string _crouchAnimatorKey;
+    
     private float _route;
     private bool _jump;
     private bool _craw;
@@ -30,12 +37,13 @@ public class PlayerController : MonoBehaviour
        // Debug.Log("Hello my Leader!");
         _rigidbody = GetComponent<Rigidbody2D>();
     }
-
     // Update is called once per frame
     private void Update() // работает при каждом обновлении кадра
     {
          _route = Input.GetAxisRaw("Horizontal"); // -1 - 0, если А или <-, 0 -1, D or -> + геймпапд так же.
-        
+
+         _animator.SetFloat(_runAnimatorKey, Mathf.Abs(_route));
+         
          if (Input.GetKeyDown(KeyCode.Space)  ) //не Axic, бо 2 вариант. Оси можно добаваить
          {
              _jump = true;
@@ -62,15 +70,18 @@ public class PlayerController : MonoBehaviour
     private void FixedUpdate() //Uчерез фикс. промж. времен. (proj/ settings/Times/Fixed TimeStep
     {
         _rigidbody.velocity = new Vector2(_route * _spead, _rigidbody.velocity.y);
-        bool canJump = Physics2D.OverlapCircle(_groundChecker.position, _groundCheckerRadius, _whatIsGround); //2 способо, лась парам. -> _WhatIsGround
-        bool canStand = Physics2D.OverlapCircle(_headChecker.position, _headCheckerRadius, _whatIsGround); //??????????? !Ph...
-       // Debug.Log(  !_craw && canStand);
+        bool canJump = Physics2D.OverlapCircle(_groundChecker.position, _groundCheckerRadius, _whatIsGround); //2 способо, ласт парам. -> _WhatIsGround
+        bool canStand = Physics2D.OverlapCircle(_headChecker.position, _headCheckerRadius, _whatIsGround); //??????????? !Ph..
+
         _headColider.enabled = !_craw && canStand;
         if (_jump && canJump)
         {
             _rigidbody.AddForce(Vector2.up* _jumpForce);
             _jump = false;
         }
+        
+        _animator.SetBool(_jumpAnimatorKey, !canJump);
+        _animator.SetBool(_crouchAnimatorKey, !_headColider.enabled);
         
 
         

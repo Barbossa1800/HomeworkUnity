@@ -11,11 +11,14 @@ public class PlayerController : MonoBehaviour
     private Rigidbody2D _rigidbody;
 
     [SerializeField] private float _spead; //
+    
     [SerializeField] private SpriteRenderer _spriteRenderer;
+    
     [SerializeField] private float _jumpForce;
     [SerializeField] private float _groundCheckerRadius;
     [SerializeField] private LayerMask _whatIsGround;
-
+    [SerializeField] private LayerMask _whatIsCell;
+    
     [SerializeField] private Transform _groundChecker;
     [SerializeField] private Collider2D _headColider;
     [SerializeField] private float _headCheckerRadius;
@@ -28,9 +31,13 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private string _jumpAnimatorKey;
     [SerializeField] private string _crouchAnimatorKey;
     
-    private float _route;
+    private float _horizontalRoute;
+    private float _verticalRoute;
     private bool _jump;
     private bool _craw;
+
+    public bool CanClimb { private  get; set; }
+
     // Start is called before the first frame update
     private void Start()
     {
@@ -40,9 +47,9 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     private void Update() // работает при каждом обновлении кадра
     {
-         _route = Input.GetAxisRaw("Horizontal"); // -1 - 0, если А или <-, 0 -1, D or -> + геймпапд так же.
-
-         _animator.SetFloat(_runAnimatorKey, Mathf.Abs(_route));
+        _horizontalRoute = Input.GetAxisRaw("Horizontal"); // -1 - 0, если А или <-, 0 -1, D or -> + геймпапд так же.
+        _verticalRoute = Input.GetAxisRaw("Vertical");
+         _animator.SetFloat(_runAnimatorKey, Mathf.Abs(_horizontalRoute));
          
          if (Input.GetKeyDown(KeyCode.Space)  ) //не Axic, бо 2 вариант. Оси можно добаваить
          {
@@ -50,11 +57,11 @@ public class PlayerController : MonoBehaviour
             
          }
          // два способа офнуть колайдер перса, для норм прыжков (1 так се, 2 топ)
-        if (_route > 0 && _spriteRenderer.flipX ) //flipX = bool
+        if (_horizontalRoute > 0 && _spriteRenderer.flipX ) //flipX = bool
         {
             _spriteRenderer.flipX = false;
         }
-        else if(_route < 0 && !_spriteRenderer.flipX)
+        else if(_horizontalRoute < 0 && !_spriteRenderer.flipX)
         {
             _spriteRenderer.flipX = true;
         }
@@ -69,9 +76,21 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate() //Uчерез фикс. промж. времен. (proj/ settings/Times/Fixed TimeStep
     {
-        _rigidbody.velocity = new Vector2(_route * _spead, _rigidbody.velocity.y);
+        _rigidbody.velocity = new Vector2(_horizontalRoute * _spead, _rigidbody.velocity.y);
+
+        if (CanClimb)
+        {
+            _rigidbody.velocity = new Vector2(_rigidbody.velocity.x, _verticalRoute * _spead);
+            _rigidbody.gravityScale = 0;
+        }
+        else
+        {
+            _rigidbody.gravityScale = 1;
+        }
+        
+        
         bool canJump = Physics2D.OverlapCircle(_groundChecker.position, _groundCheckerRadius, _whatIsGround); //2 способо, ласт парам. -> _WhatIsGround
-        bool canStand = Physics2D.OverlapCircle(_headChecker.position, _headCheckerRadius, _whatIsGround); //??????????? !Ph..
+        bool canStand = !Physics2D.OverlapCircle(_headChecker.position, _headCheckerRadius, _whatIsCell); //??????????? !Ph..
 
         _headColider.enabled = !_craw && canStand;
         if (_jump && canJump)
@@ -92,5 +111,10 @@ public class PlayerController : MonoBehaviour
         Gizmos.DrawWireSphere(_groundChecker.position, _groundCheckerRadius);
         Gizmos.color = Color.green;
         Gizmos.DrawWireSphere(_headChecker.position, _headCheckerRadius);
+    }
+
+    public void AddHp(int hpPoints)
+    {
+        Debug.Log("Hp raised " + hpPoints);
     }
 }

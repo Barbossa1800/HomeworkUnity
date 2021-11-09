@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.UIElements;
@@ -26,7 +27,9 @@ public class PlayerController : MonoBehaviour
 
     [Header(("Animation"))] 
     [SerializeField] private Animator _animator;
-
+    
+    [Header("UI")] [SerializeField] private TMP_Text _coinAmountText;
+    
     [SerializeField] private string _runAnimatorKey;
     [SerializeField] private string _jumpAnimatorKey;
     [SerializeField] private string _crouchAnimatorKey;
@@ -35,23 +38,31 @@ public class PlayerController : MonoBehaviour
     private float _verticalRoute;
     private bool _jump;
     private bool _craw;
-
+    
+    private int _coinsAmount;
+    
     public bool CanClimb { private  get; set; }
-
-    // Start is called before the first frame update
+    
+    public int CoinsAmount
+    {
+        get => _coinsAmount;
+        set
+        {
+            _coinsAmount = value;
+            _coinAmountText.text = value.ToString();
+        }
+    } 
     private void Start()
     {
-       // Debug.Log("Hello my Leader!");
         _rigidbody = GetComponent<Rigidbody2D>();
     }
-    // Update is called once per frame
-    private void Update() // работает при каждом обновлении кадра
+    private void Update()
     {
         _horizontalRoute = Input.GetAxisRaw("Horizontal"); // -1 - 0, если А или <-, 0 -1, D or -> + геймпапд так же.
         _verticalRoute = Input.GetAxisRaw("Vertical");
          _animator.SetFloat(_runAnimatorKey, Mathf.Abs(_horizontalRoute));
          
-         if (Input.GetKeyDown(KeyCode.Space)  ) //не Axic, бо 2 вариант. Оси можно добаваить
+         if (Input.GetKeyDown(KeyCode.Space)  )
          {
              _jump = true;
             
@@ -65,12 +76,6 @@ public class PlayerController : MonoBehaviour
         {
             _spriteRenderer.flipX = true;
         }
-       
-        /*Collider2D[] colliders = Physics2D.OverlapCircleAll(_groundChecker.position, _groundCheckerRadius); //1 способ, масив колайдеров всех
-        if (colliders.Length>1)
-        {
-            cnaJump = true; //1
-        }*/
         _craw = Input.GetKey(KeyCode.C);
     }
 
@@ -101,12 +106,9 @@ public class PlayerController : MonoBehaviour
         
         _animator.SetBool(_jumpAnimatorKey, !canJump);
         _animator.SetBool(_crouchAnimatorKey, !_headColider.enabled);
-        
-
-        
     }
 
-    private void OnDrawGizmos() // будет возвр. рез. есть ли колайдеры в радиусе
+    private void OnDrawGizmos()
     {
         Gizmos.DrawWireSphere(_groundChecker.position, _groundCheckerRadius);
         Gizmos.color = Color.green;

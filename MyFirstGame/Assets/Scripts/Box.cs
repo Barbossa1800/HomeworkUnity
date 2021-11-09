@@ -6,26 +6,31 @@ using UnityEngine;
 [RequireComponent(typeof(SpriteRenderer))]
 public class Box : MonoBehaviour
 {
-    [SerializeField] private Sprite _avtiveSprite;
-    private SpriteRenderer _spriteRenderer;
-    private Sprite _inactiveSprite;
+    float lastInteractionTime;
 
-    private bool _activated;
+    private bool _itteractive = true;
 
-    private void Start()
-    {
-        _spriteRenderer = GetComponent<SpriteRenderer>();
-        _inactiveSprite = _spriteRenderer.sprite;
-    }
-
+    [SerializeField] private int _coinsAmount;
+    public bool Activated { private get; set; }
     private void OnTriggerEnter2D(Collider2D other)
     {
-        PlayerController player = other.GetComponent<PlayerController>();
-        if (player != null && !_activated)
+        if (!_itteractive)
         {
-            _spriteRenderer.sprite = _avtiveSprite;
-            //_activated = true; - не нада!
-            Debug.Log("Activated box");
+            return;
         }
+        if (!Activated)
+        {
+            return;
+        }
+
+        PlayerController player = other.GetComponent<PlayerController>();
+        if (player != null && Time.time - lastInteractionTime > 0.02f )
+        {
+            lastInteractionTime = Time.time;
+            player.CoinsAmount += _coinsAmount;
+            _itteractive = false;
+        }
+        
+        
     }
 }

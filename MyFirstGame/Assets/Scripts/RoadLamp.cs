@@ -6,6 +6,8 @@ using UnityEngine;
 public class RoadLamp : MonoBehaviour
 {
     [SerializeField] private Sprite _activeSprite;
+    [SerializeField] private Box _box;
+    
     private SpriteRenderer _spriteRenderer;
     private Sprite _inactiveSprite;
 
@@ -24,6 +26,7 @@ public class RoadLamp : MonoBehaviour
         {
             _spriteRenderer.sprite = _activeSprite;
             _activated = true; //- не нада!
+            _box.Activated = true;
             Debug.Log("Activated lamp");
         }
         else

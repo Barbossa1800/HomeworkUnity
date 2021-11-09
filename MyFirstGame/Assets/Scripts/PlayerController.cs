@@ -4,7 +4,8 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Rendering;
-using UnityEngine.UIElements;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 [RequireComponent(typeof(Rigidbody2D))] //закреплени,  для удержания от изменений в юнити в Rigidbody (защита от дурака)
 
 public class PlayerController : MonoBehaviour
@@ -24,11 +25,19 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Collider2D _headColider;
     [SerializeField] private float _headCheckerRadius;
     [SerializeField] private Transform _headChecker;
-
+    
+    [SerializeField] private int _maxHp; 
+    private int _currentHp;
+    
     [Header(("Animation"))] 
     [SerializeField] private Animator _animator;
     
-    [Header("UI")] [SerializeField] private TMP_Text _coinAmountText;
+    [Header("UI")] 
+    [SerializeField] private TMP_Text _coinAmountText;
+
+    [SerializeField] private Slider _hpBar;
+    
+    //[SerializeField] private Slider _hpBar;
     
     [SerializeField] private string _runAnimatorKey;
     [SerializeField] private string _jumpAnimatorKey;
@@ -40,9 +49,11 @@ public class PlayerController : MonoBehaviour
     private bool _craw;
     
     private int _coinsAmount;
+  
     
     public bool CanClimb { private  get; set; }
     
+   
     public int CoinsAmount
     {
         get => _coinsAmount;
@@ -52,8 +63,24 @@ public class PlayerController : MonoBehaviour
             _coinAmountText.text = value.ToString();
         }
     } 
+    private int CurrentHp
+    {
+        get => _currentHp;
+        set
+        {
+            if (value > _maxHp)
+            {
+                value = _maxHp;
+            }
+            _currentHp = value;
+            _hpBar.value = value;
+        }
+    }
     private void Start()
     {
+        CoinsAmount = 0;
+        _hpBar.maxValue = _maxHp;
+        CurrentHp = _maxHp;
         _rigidbody = GetComponent<Rigidbody2D>();
     }
     private void Update()
@@ -93,7 +120,6 @@ public class PlayerController : MonoBehaviour
             _rigidbody.gravityScale = 1;
         }
         
-        
         bool canJump = Physics2D.OverlapCircle(_groundChecker.position, _groundCheckerRadius, _whatIsGround); //2 способо, ласт парам. -> _WhatIsGround
         bool canStand = !Physics2D.OverlapCircle(_headChecker.position, _headCheckerRadius, _whatIsCell); //??????????? !Ph..
 
@@ -117,6 +143,35 @@ public class PlayerController : MonoBehaviour
 
     public void AddHp(int hpPoints)
     {
-        Debug.Log("Hp raised " + hpPoints);
+        
+        int missingHp = _maxHp - CurrentHp;
+        int pointToAdd = missingHp > hpPoints ? hpPoints : missingHp;
+        StartCoroutine(RestoreHp(pointToAdd));
+    }
+
+    private IEnumerator RestoreHp(int pointToAdd)
+    {
+        
+        while (pointToAdd != 0)
+        {
+            pointToAdd--;
+            CurrentHp++;
+            yield return new WaitForSeconds(0.2f);
+        }
+    }
+    
+    public void TakeDamage(int damage)
+    {
+        CurrentHp -= damage;
+        if (_currentHp <= 0)
+        {
+            Debug.Log("Died!!!");
+            gameObject.SetActive(false);
+            Invoke(nameof(ReloadScene), 1f);
+        }
+    }
+    private void ReloadScene()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 }
